@@ -1,0 +1,12 @@
+[package]
+name = "pixfetch"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ansipix = "0.1.2"
+chrono = "0.4.19"
+sysinfo = "0.22.5"
+systemstat = "0.1.10"
