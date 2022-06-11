@@ -1,8 +1,8 @@
-use std::{io::Read, process::Command, env, path::Path};
 use battery::{units::ratio::percent, State};
 use chrono::Duration;
-use systemstat::{System as StatSystem, Platform};
-use sysinfo::{System as InfoSystem, SystemExt, ProcessExt, CpuExt, Pid};
+use std::{env, io::Read, path::Path, process::Command};
+use sysinfo::{CpuExt, Pid, ProcessExt, System as InfoSystem, SystemExt};
+use systemstat::{Platform, System as StatSystem};
 
 pub struct System {
     systemstat: StatSystem,
@@ -17,7 +17,7 @@ impl System {
         };
         s.sysinfo.refresh_memory();
         s.sysinfo.refresh_processes();
-        return s;
+        s
     }
 
     fn is_android(&self) -> bool {
@@ -31,7 +31,8 @@ impl System {
         } else {
             return Some(format!(
                 "{}@{}",
-                String::from_utf8_lossy(&Command::new("id").arg("-un").output().ok()?.stdout).replace('\n', ""),
+                String::from_utf8_lossy(&Command::new("id").arg("-un").output().ok()?.stdout)
+                    .replace('\n', ""),
                 self.sysinfo.host_name()?,
             ));
         }
@@ -47,7 +48,7 @@ impl System {
                 return Some(format!("{} {}", self.sysinfo.name()?, version));
             }
         }
-        return self.sysinfo.name();
+        self.sysinfo.name()
     }
 
     pub fn host(&self) -> Option<String> {
@@ -59,23 +60,34 @@ impl System {
         let version_file = std::fs::File::open("/sys/devices/virtual/dmi/id/product_version").ok();
         let model_file = std::fs::File::open("/sys/firmware/devicetree/base/model").ok();
 
-        if [&name_file, &version_file, &model_file].iter().all(|f| f.is_none()) { return None }
+        if [&name_file, &version_file, &model_file]
+            .iter()
+            .all(|f| f.is_none())
+        {
+            return None;
+        }
 
         let name = if let Some(mut file) = name_file {
             let mut str = String::new();
             file.read_to_string(&mut str).unwrap_or(0);
             str.replace('\n', "")
-        } else { "".to_string() };
+        } else {
+            "".to_string()
+        };
         let version = if let Some(mut file) = version_file {
             let mut str = String::new();
             file.read_to_string(&mut str).unwrap_or(0);
             str.replace('\n', "")
-        } else { "".to_string() };
+        } else {
+            "".to_string()
+        };
         let model = if let Some(mut file) = model_file {
             let mut str = String::new();
             file.read_to_string(&mut str).unwrap_or(0);
             str.replace('\n', "")
-        } else { "".to_string() };
+        } else {
+            "".to_string()
+        };
 
         let host = format!("{} {} {}", name, version, model);
         let blacklist = [
@@ -112,17 +124,11 @@ impl System {
         let host_n = host_filtered.join(" ");
         if host_n.is_empty() {
             return Some(
-                String::from_utf8_lossy(
-                    &Command::new("uname")
-                        .arg("-m")
-                        .output()
-                        .ok()?
-                        .stdout
-                    ).replace('\n', ""
-                )
+                String::from_utf8_lossy(&Command::new("uname").arg("-m").output().ok()?.stdout)
+                    .replace('\n', ""),
             );
         } else {
-            return Some(host_n);
+            Some(host_n)
         }
     }
 
@@ -139,8 +145,16 @@ impl System {
 
         Some(format!(
             "{}{}{}m",
-            if days > 0 { format!("{}d ", days) } else { String::new() },
-            if hours > 0 { format!("{}h ", hours) } else { String::new() },
+            if days > 0 {
+                format!("{}d ", days)
+            } else {
+                String::new()
+            },
+            if hours > 0 {
+                format!("{}h ", hours)
+            } else {
+                String::new()
+            },
             minutes
         ))
     }
@@ -148,13 +162,17 @@ impl System {
     pub fn packages(&self) -> Option<String> {
         let commands = vec![
             Command::new("pacman").arg("-Qq").output(),
-            Command::new("dpkg-query").args(["-f", r".\n", "-W"]).output(),
+            Command::new("dpkg-query")
+                .args(["-f", r".\n", "-W"])
+                .output(),
             Command::new("bonsai").arg("list").output(),
             Command::new("pkginfo").arg("-i").output(),
             Command::new("rpm").arg("-qa").output(),
             Command::new("xbps-query").arg("-l").output(),
             Command::new("apk").arg("info").output(),
-            Command::new("guix").args(["package", "--list-installed"]).output(),
+            Command::new("guix")
+                .args(["package", "--list-installed"])
+                .output(),
             Command::new("opkg").arg("list-installed").output(),
             Command::new("kiss").arg("l").output(),
             Command::new("cpt-list").output(),
@@ -166,25 +184,27 @@ impl System {
             Command::new("gaze").arg("installed").output(),
             Command::new("alps").arg("showinstalled").output(),
             Command::new("butch").arg("list").output(),
-            Command::new("swupd").args(["bundle-list", "--quiet"]).output(),
+            Command::new("swupd")
+                .args(["bundle-list", "--quiet"])
+                .output(),
             Command::new("pisi").arg("li").output(),
             Command::new("pacstall").arg("-L").output(),
             // TODO: emerge
         ];
 
-        for command in commands {
-            if let Ok(output) = command {
-                if !output.status.success() { continue; }
-                return Some(
-                    String::from_utf8_lossy(&output.stdout)
-                        .trim_matches('\n')
-                        .split('\n')
-                        .count()
-                        .to_string()
-                );
+        for command in commands.iter().flatten() {
+            if !command.status.success() {
+                continue;
             }
+            return Some(
+                String::from_utf8_lossy(&command.stdout)
+                    .trim_matches('\n')
+                    .split('\n')
+                    .count()
+                    .to_string(),
+            );
         }
-        return None;
+        None
     }
 
     pub fn shell(&self) -> Option<String> {
@@ -222,7 +242,7 @@ impl System {
             }
         }
 
-        return Some(name.to_owned());
+        Some(name.to_owned())
     }
 
     pub fn cpu(&self) -> Option<String> {
@@ -232,17 +252,19 @@ impl System {
     pub fn memory(&self) -> Option<String> {
         Some(format!(
             "{:.2}GB / {:.2}GB",
-            (self.sysinfo.used_memory()  as f32) / 1024.0 / 1024.0,
+            (self.sysinfo.used_memory() as f32) / 1024.0 / 1024.0,
             (self.sysinfo.total_memory() as f32) / 1024.0 / 1024.0,
         ))
     }
 
     pub fn swap(&self) -> Option<String> {
         let total_swap = self.sysinfo.total_swap();
-        if total_swap == 0 { return None; }
+        if total_swap == 0 {
+            return None;
+        }
         Some(format!(
             "{:.2}GB / {:.2}GB",
-            (self.sysinfo.used_swap()  as f32) / 1024.0 / 1024.0,
+            (self.sysinfo.used_swap() as f32) / 1024.0 / 1024.0,
             (self.sysinfo.total_swap() as f32) / 1024.0 / 1024.0,
         ))
     }
@@ -250,18 +272,28 @@ impl System {
     pub fn battery(&self) -> Option<String> {
         let manager = battery::Manager::new().ok()?;
         let battery = manager.batteries().ok()?.next()?.ok()?;
-        Some(format!("{}%{}", battery.state_of_charge().get::<percent>(), match battery.state() {
-            State::Charging => ", charging",
-            State::Discharging => ", discharging",
-            _ => "",
-        }))
+        Some(format!(
+            "{}%{}",
+            battery.state_of_charge().get::<percent>(),
+            match battery.state() {
+                State::Charging => ", charging",
+                State::Discharging => ", discharging",
+                _ => "",
+            }
+        ))
     }
 
     pub fn colors1(&self) -> String {
-        (0..8).map(|c| format!("\x1b[4{}m   ", c)).collect::<String>() + "\x1b[0m"
+        (0..8)
+            .map(|c| format!("\x1b[4{}m   ", c))
+            .collect::<String>()
+            + "\x1b[0m"
     }
 
     pub fn colors2(&self) -> String {
-        (8..16).map(|c| format!("\x1b[48;5;{}m   ", c)).collect::<String>() + "\x1b[0m"
+        (8..16)
+            .map(|c| format!("\x1b[48;5;{}m   ", c))
+            .collect::<String>()
+            + "\x1b[0m"
     }
 }
