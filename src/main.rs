@@ -1,20 +1,5 @@
 use std::path::PathBuf;
 
-// user@hostname
-//
-// OS
-// Host
-// kernel
-// uptime
-// packages
-// shell
-// terminal
-// cpu
-// memory
-// battery
-//
-// colors
-
 mod info;
 
 fn main() {
