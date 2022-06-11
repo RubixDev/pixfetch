@@ -1,7 +1,8 @@
 use std::{io::Read, process::Command, env, path::Path};
+use battery::{units::ratio::percent, State};
 use chrono::Duration;
 use systemstat::{System as StatSystem, Platform};
-use sysinfo::{System as InfoSystem, SystemExt, ProcessExt, ProcessorExt};
+use sysinfo::{System as InfoSystem, SystemExt, ProcessExt, CpuExt, Pid};
 
 pub struct System {
     systemstat: StatSystem,
@@ -198,7 +199,7 @@ impl System {
             }
         }
 
-        let process = self.sysinfo.process(std::process::id() as i32)?;
+        let process = self.sysinfo.process(Pid::from(std::process::id() as i32))?;
         let shell = self.sysinfo.process(process.parent()?)?;
         let terminal = self.sysinfo.process(shell.parent()?)?;
 
@@ -225,7 +226,7 @@ impl System {
     }
 
     pub fn cpu(&self) -> Option<String> {
-        Some(self.sysinfo.processors().iter().next()?.brand().to_owned())
+        Some(self.sysinfo.cpus().iter().next()?.brand().to_string())
     }
 
     pub fn memory(&self) -> Option<String> {
@@ -245,23 +246,13 @@ impl System {
     }
 
     pub fn battery(&self) -> Option<String> {
-        let battery = self.systemstat.battery_life().ok()?;
-        let on_ac = self.systemstat.on_ac_power().ok()?;
-
-        let remaining_time = Duration::from_std(battery.remaining_time).ok()?;
-
-        let days = remaining_time.num_days();
-        let hours = remaining_time.num_hours() - 24 * days;
-        let minutes = remaining_time.num_minutes() - 60 * hours - 24 * 60 * days;
-
-        Some(format!(
-            "{}%, {}{}{}m remaining, {}charging",
-            (battery.remaining_capacity * 100.0).round()/*  as i32 */,
-            if days > 0 { format!("{}d ", days) } else { String::new() },
-            if hours > 0 { format!("{}h ", hours) } else { String::new() },
-            minutes,
-            if on_ac { "" } else { "dis" }
-        ))
+        let manager = battery::Manager::new().ok()?;
+        let battery = manager.batteries().ok()?.next()?.ok()?;
+        Some(format!("{}%{}", battery.state_of_charge().get::<percent>(), match battery.state() {
+            State::Charging => ", charging",
+            State::Discharging => ", discharging",
+            _ => "",
+        }))
     }
 
     pub fn colors1(&self) -> String {

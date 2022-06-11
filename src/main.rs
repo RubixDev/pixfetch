@@ -52,7 +52,7 @@ fn main() {
     };
 
     let img_width = 30;
-    let img_str = ansipix::of_image(PathBuf::from(img_filename), (img_width, 64), 50, false).expect("error");
+    let img_str = ansipix::of_image_file(PathBuf::from(img_filename), (img_width, 64), 50, false).expect("error");
     let img: Vec<&str> = img_str.trim_matches('\n').split('\n').collect();
 
     for line in 0..(img.len().max(info.len())) {
