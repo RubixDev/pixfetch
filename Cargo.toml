@@ -9,5 +9,7 @@ edition = "2021"
 ansipix = "1.0.0"
 battery = "0.7.8"
 chrono = "0.4.19"
+serde = { version = "1.0.137", features = ["derive"] }
 sysinfo = "0.24.3"
 systemstat = "0.1.11"
+toml = "0.5.9"

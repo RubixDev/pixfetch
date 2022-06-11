@@ -1,0 +1,34 @@
+# The maximum width in pixels of the image
+# - Must be an integer between 5 and 50
+# - Required
+max_width = 30
+
+# The minimum alpha value for pixels to be displayed (0-255)
+#alpha_threshold = 50
+
+# Override the main color
+# - Must be an integer between 0 and 7
+# - The color for the user@hostname will be this + 1
+#color_override = 2
+
+# Path to a custom image to be used instead
+#image_override = "~/Pictures/logo.png"
+
+# A list of infos to not show.
+#info_blacklist = [
+#    "UserAtHostname",
+#    "Os",
+#    "Host",
+#    "Kernel",
+#    "Uptime",
+#    "Packages",
+#    "Shell",
+#    "Terminal",
+#    "Cpu",
+#    "Memory",
+#    "Swap",
+#    "Battery",
+#    "Seperator",
+#    "Colors1",
+#    "Colors2",
+#]

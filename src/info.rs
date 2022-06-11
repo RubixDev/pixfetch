@@ -1,8 +1,50 @@
 use battery::{units::ratio::percent, State};
 use chrono::Duration;
+use serde::Deserialize;
 use std::{env, io::Read, path::Path, process::Command};
 use sysinfo::{CpuExt, Pid, ProcessExt, System as InfoSystem, SystemExt};
 use systemstat::{Platform, System as StatSystem};
+
+#[derive(Deserialize, Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Info {
+    UserAtHostname,
+    Os,
+    Host,
+    Kernel,
+    Uptime,
+    Packages,
+    Shell,
+    Terminal,
+    Cpu,
+    Memory,
+    Swap,
+    Battery,
+    Seperator,
+    Colors1,
+    Colors2,
+}
+
+impl Info {
+    pub fn get_info(&self, sys: &System) -> Option<String> {
+        match self {
+            Info::UserAtHostname => sys.user_at_hostname(),
+            Info::Os => sys.os(),
+            Info::Host => sys.host(),
+            Info::Kernel => sys.kernel(),
+            Info::Uptime => sys.uptime(),
+            Info::Packages => sys.packages(),
+            Info::Shell => sys.shell(),
+            Info::Terminal => sys.terminal(),
+            Info::Cpu => sys.cpu(),
+            Info::Memory => sys.memory(),
+            Info::Swap => sys.swap(),
+            Info::Battery => sys.battery(),
+            Info::Seperator => Some(String::new()),
+            Info::Colors1 => Some(sys.colors1()),
+            Info::Colors2 => Some(sys.colors2()),
+        }
+    }
+}
 
 pub struct System {
     systemstat: StatSystem,
