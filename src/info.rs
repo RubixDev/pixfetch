@@ -238,6 +238,8 @@ impl System {
     }
 
     pub fn swap(&self) -> Option<String> {
+        let total_swap = self.sysinfo.total_swap();
+        if total_swap == 0 { return None; }
         Some(format!(
             "{:.2}GB / {:.2}GB",
             (self.sysinfo.used_swap()  as f32) / 1024.0 / 1024.0,
