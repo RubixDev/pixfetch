@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use ansipix::ImageFormat;
 
 mod info;
 
@@ -28,33 +28,38 @@ fn main() {
     .collect();
 
     let col: u8;
-    let img_filename = match info.iter().find(|e| e.0 == "OS") {
+    let img_bytes = match info.iter().find(|e| e.0 == "OS") {
         Some(distro) => {
             let distro = distro.1.as_str();
 
             if distro == "Arch Linux" {
                 col = 4;
-                "logos/arch.png"
+                &include_bytes!("../logos/arch.png")[..]
             } else if distro.contains("Android") {
                 col = 2;
-                "logos/android.png"
+                &include_bytes!("../logos/android.png")[..]
             } else if distro.contains("Debian") {
                 col = 1;
-                "logos/debian.png"
+                &include_bytes!("../logos/debian.png")[..]
             } else {
                 col = 3;
-                "logos/tux.png"
+                &include_bytes!("../logos/tux.png")[..]
             }
         }
         None => {
             col = 3;
-            "logos/tux.png"
+            &include_bytes!("../logos/tux.png")[..]
         }
     };
-
     let img_width = 30;
-    let img_str = ansipix::of_image_file(PathBuf::from(img_filename), (img_width, 64), 50, false)
-        .expect("error");
+    let img_str = ansipix::of_image_bytes_with_format(
+        img_bytes,
+        (img_width, 64),
+        50,
+        false,
+        ImageFormat::Png,
+    )
+    .expect("error");
     let img: Vec<&str> = img_str.trim_matches('\n').split('\n').collect();
 
     for line in 0..(img.len().max(info.len())) {
