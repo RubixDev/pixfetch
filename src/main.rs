@@ -1,6 +1,7 @@
-use std::{env, path::PathBuf, process};
+use std::process;
 
 use ansipix::ImageFormat;
+use config::expand_path;
 use info::Info;
 
 mod config;
@@ -73,17 +74,7 @@ fn main() {
         col = color_override;
     }
     let img_str = match if let Some(path) = config.image_override {
-        let path = if path.starts_with("~/") {
-            match env::var("HOME") {
-                Ok(home) => PathBuf::from(home + &path[1..]),
-                Err(_) => {
-                    eprintln!("\x1b[31mFailed to determine HOME directory, please specify the full path in your config file.\x1b[0m");
-                    process::exit(1);
-                }
-            }
-        } else {
-            PathBuf::from(path)
-        };
+        let path = expand_path(&path);
         ansipix::of_image_file(
             path,
             (config.max_width.into(), 1000),

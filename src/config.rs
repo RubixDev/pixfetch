@@ -3,10 +3,11 @@ use std::{
     env,
     fs::{self, File},
     io::{self, Read, Write},
-    path::Path,
+    path::{Path, PathBuf},
+    process,
 };
 
-use crate::info::Info;
+use crate::{error::Error, info::Info};
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -20,8 +21,43 @@ pub struct Config {
 
 impl Config {
     fn validated(self) -> crate::Result<Self> {
-        // TODO: validate
+        if !(5..=50).contains(&self.max_width) {
+            return Err(Error::InvalidConfig(format!(
+                "The specified max_width `{}` is not between 5 and 50",
+                self.max_width
+            )));
+        }
+        if let Some(color) = &self.color_override {
+            if !(0..=7).contains(color) {
+                return Err(Error::InvalidConfig(format!(
+                    "The specified color `{}` is not between 0 and 7",
+                    color
+                )));
+            }
+        }
+        if let Some(path) = &self.image_override {
+            if !expand_path(path).is_file() {
+                return Err(Error::InvalidConfig(format!(
+                    "The specified image is not a file: `{}`",
+                    path
+                )));
+            }
+        }
         Ok(self)
+    }
+}
+
+pub fn expand_path(path: &str) -> PathBuf {
+    if path.starts_with("~/") {
+        match env::var("HOME") {
+            Ok(home) => PathBuf::from(home + &path[1..]),
+            Err(_) => {
+                eprintln!("\x1b[31mFailed to determine HOME directory, please specify the full path in your config file.\x1b[0m");
+                process::exit(1);
+            }
+        }
+    } else {
+        PathBuf::from(path)
     }
 }
 
