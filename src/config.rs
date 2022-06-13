@@ -45,6 +45,19 @@ pub struct Config {
     pub info_blacklist: Option<Vec<Info>>,
 }
 
+impl Default for Config {
+    #[inline]
+    fn default() -> Self {
+        Self {
+            max_width: None,
+            alpha_threshold: None,
+            color_override: None,
+            image_override: None,
+            info_blacklist: None,
+        }
+    }
+}
+
 impl Config {
     fn validated(self) -> crate::Result<Self> {
         if let Some(width) = &self.max_width {
@@ -115,13 +128,7 @@ pub fn read_config() -> crate::Result<Config> {
                 let mut file = File::create(path)?;
                 file.write_all(include_bytes!("default_config.toml"))?;
 
-                return Ok(Config {
-                    max_width: None,
-                    alpha_threshold: None,
-                    color_override: None,
-                    image_override: None,
-                    info_blacklist: None,
-                });
+                return Ok(Config::default());
             }
             _ => return Err(e.into()),
         },
