@@ -11,7 +11,7 @@ use std::{
 use crate::{error::Error, info::Info};
 
 /// Another fetch program with variable sized pixel images
-#[derive(Debug, Deserialize, Parser)]
+#[derive(Debug, Deserialize, Parser, Default)]
 #[clap(author)]
 pub struct Config {
     /// The maximum width in pixels of the image
@@ -34,32 +34,19 @@ pub struct Config {
     #[clap(long)]
     pub color_override: Option<u8>,
 
-    /// Path to a custom image to be used instead
+    /// Path to a custom image to be used instead of the OS logo
     #[clap(long)]
     pub image_override: Option<String>,
 
-    /// A list of infos to not show.
+    /// A list of infos to not show
     ///
     /// - See possible values in default config file
     #[clap(long, min_values = 0)]
     pub info_blacklist: Option<Vec<Info>>,
 }
 
-impl Default for Config {
-    #[inline]
-    fn default() -> Self {
-        Self {
-            max_width: None,
-            alpha_threshold: None,
-            color_override: None,
-            image_override: None,
-            info_blacklist: None,
-        }
-    }
-}
-
 impl Config {
-    fn validated(self) -> crate::Result<Self> {
+    pub fn validated(self) -> crate::Result<Self> {
         if let Some(width) = &self.max_width {
             if !(5..=50).contains(width) {
                 return Err(Error::InvalidConfig(format!(
@@ -135,5 +122,5 @@ pub fn read_config() -> crate::Result<Config> {
     };
     file.read_to_string(&mut buf)?;
 
-    toml::from_str::<Config>(&buf)?.validated()
+    Ok(toml::from_str::<Config>(&buf)?)
 }

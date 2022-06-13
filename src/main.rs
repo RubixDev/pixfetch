@@ -15,7 +15,7 @@ fn main() {
     let sys = info::System::new();
     let flags = Config::parse();
     let config = match config::read_config() {
-        Ok(conf) => Config {
+        Ok(conf) => match (Config {
             max_width: if let Some(w) = flags.max_width {
                 Some(w)
             } else {
@@ -41,6 +41,14 @@ fn main() {
             } else {
                 conf.info_blacklist
             },
+        }
+        .validated())
+        {
+            Ok(config) => config,
+            Err(e) => {
+                eprintln!("\x1b[1;31mYour configuration (flags and/or config file) is invalid:\x1b[22m {}\x1b[0m", e);
+                process::exit(1);
+            }
         },
         Err(e) => {
             eprintln!("\x1b[1;31mFailed to read config file:\x1b[22m {}\x1b[0m", e);
