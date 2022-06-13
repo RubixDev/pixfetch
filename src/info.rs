@@ -2,10 +2,11 @@ use battery::{units::ratio::percent, State};
 use chrono::Duration;
 use serde::Deserialize;
 use std::{env, io::Read, path::Path, process::Command};
+use strum::EnumString;
 use sysinfo::{CpuExt, Pid, ProcessExt, System as InfoSystem, SystemExt};
 use systemstat::{Platform, System as StatSystem};
 
-#[derive(Deserialize, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Deserialize, Debug, PartialEq, Eq, Clone, Copy, EnumString)]
 pub enum Info {
     UserAtHostname,
     Os,

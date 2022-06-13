@@ -1,3 +1,4 @@
+use clap::Parser;
 use serde::Deserialize;
 use std::{
     env,
@@ -9,28 +10,56 @@ use std::{
 
 use crate::{error::Error, info::Info};
 
-#[derive(Debug, Deserialize)]
+/// Another fetch program with variable sized pixel images
+#[derive(Debug, Deserialize, Parser)]
+#[clap(author)]
 pub struct Config {
-    pub max_width: u8,
+    /// The maximum width in pixels of the image
+    ///
+    /// - Must be an integer between 5 and 50
+    #[clap(long)]
+    pub max_width: Option<u8>,
+
+    /// The minimum alpha value for pixels to be displayed
+    ///
+    /// - Must be an integer between 0 and 255
+    #[clap(long)]
     pub alpha_threshold: Option<u8>,
+
+    /// Override the main color
+    ///
+    /// - Must be an integer between 0 and 7
+    ///
+    /// - The color for the user@hostname will be this + 1
+    #[clap(long)]
     pub color_override: Option<u8>,
+
+    /// Path to a custom image to be used instead
+    #[clap(long)]
     pub image_override: Option<String>,
+
+    /// A list of infos to not show.
+    ///
+    /// - See possible values in default config file
+    #[clap(long, min_values = 0)]
     pub info_blacklist: Option<Vec<Info>>,
 }
 
 impl Config {
     fn validated(self) -> crate::Result<Self> {
-        if !(5..=50).contains(&self.max_width) {
-            return Err(Error::InvalidConfig(format!(
-                "The specified max_width `{}` is not between 5 and 50",
-                self.max_width
-            )));
+        if let Some(width) = &self.max_width {
+            if !(5..=50).contains(width) {
+                return Err(Error::InvalidConfig(format!(
+                    "The specified max_width `{}` is not between 5 and 50",
+                    width,
+                )));
+            }
         }
         if let Some(color) = &self.color_override {
             if !(0..=7).contains(color) {
                 return Err(Error::InvalidConfig(format!(
                     "The specified color `{}` is not between 0 and 7",
-                    color
+                    color,
                 )));
             }
         }
@@ -38,7 +67,7 @@ impl Config {
             if !expand_path(path).is_file() {
                 return Err(Error::InvalidConfig(format!(
                     "The specified image is not a file: `{}`",
-                    path
+                    path,
                 )));
             }
         }
@@ -87,7 +116,7 @@ pub fn read_config() -> crate::Result<Config> {
                 file.write_all(include_bytes!("default_config.toml"))?;
 
                 return Ok(Config {
-                    max_width: 30,
+                    max_width: None,
                     alpha_threshold: None,
                     color_override: None,
                     image_override: None,

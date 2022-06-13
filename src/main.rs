@@ -1,7 +1,8 @@
 use std::process;
 
 use ansipix::ImageFormat;
-use config::expand_path;
+use clap::Parser;
+use config::{expand_path, Config};
 use info::Info;
 
 mod config;
@@ -12,8 +13,35 @@ pub use error::Result;
 
 fn main() {
     let sys = info::System::new();
+    let flags = Config::parse();
     let config = match config::read_config() {
-        Ok(conf) => conf,
+        Ok(conf) => Config {
+            max_width: if let Some(w) = flags.max_width {
+                Some(w)
+            } else {
+                conf.max_width
+            },
+            alpha_threshold: if let Some(t) = flags.alpha_threshold {
+                Some(t)
+            } else {
+                conf.alpha_threshold
+            },
+            color_override: if let Some(c) = flags.color_override {
+                Some(c)
+            } else {
+                conf.color_override
+            },
+            image_override: if let Some(i) = flags.image_override {
+                Some(i)
+            } else {
+                conf.image_override
+            },
+            info_blacklist: if let Some(b) = flags.info_blacklist {
+                Some(b)
+            } else {
+                conf.info_blacklist
+            },
+        },
         Err(e) => {
             eprintln!("\x1b[1;31mFailed to read config file:\x1b[22m {}\x1b[0m", e);
             process::exit(1);
@@ -79,18 +107,19 @@ fn main() {
     if let Some(color_override) = config.color_override {
         col = color_override;
     }
+    let max_width = config.max_width.unwrap_or(30).into();
     let img_str = match if let Some(path) = config.image_override {
         let path = expand_path(&path);
         ansipix::of_image_file(
             path,
-            (config.max_width.into(), 1000),
+            (max_width, 1000),
             config.alpha_threshold.unwrap_or(50),
             false,
         )
     } else {
         ansipix::of_image_bytes_with_format(
             img_bytes,
-            (config.max_width.into(), 1000),
+            (max_width, 1000),
             config.alpha_threshold.unwrap_or(50),
             false,
             ImageFormat::Png,
@@ -108,7 +137,7 @@ fn main() {
         if line < img.len() {
             print!("{}  ", img[line]);
         } else {
-            print!("{}  ", " ".repeat(config.max_width.into()));
+            print!("{}  ", " ".repeat(max_width));
         }
 
         if line < infos.len() {
