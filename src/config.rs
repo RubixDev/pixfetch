@@ -3,7 +3,7 @@ use std::{
     env,
     fs::{self, File},
     io::{self, Read, Write},
-    path::{Path, PathBuf},
+    path::Path,
 };
 
 use crate::info::Info;
@@ -12,10 +12,8 @@ use crate::info::Info;
 pub struct Config {
     pub max_width: u8,
     pub alpha_threshold: Option<u8>,
-    // TODO: implement
     pub color_override: Option<u8>,
-    // TODO: implement and support ~ for HOME
-    pub image_override: Option<PathBuf>,
+    pub image_override: Option<String>,
     #[serde(default = "Vec::new")]
     pub info_blacklist: Vec<Info>,
 }

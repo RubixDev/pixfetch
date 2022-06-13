@@ -1,4 +1,4 @@
-use std::process;
+use std::{env, path::PathBuf, process};
 
 use ansipix::ImageFormat;
 use info::Info;
@@ -72,14 +72,39 @@ fn main() {
     if let Some(color_override) = config.color_override {
         col = color_override;
     }
-    let img_str = ansipix::of_image_bytes_with_format(
-        img_bytes,
-        (config.max_width.into(), 1000),
-        config.alpha_threshold.unwrap_or(50),
-        false,
-        ImageFormat::Png,
-    )
-    .expect("error");
+    let img_str = match if let Some(path) = config.image_override {
+        let path = if path.starts_with("~/") {
+            match env::var("HOME") {
+                Ok(home) => PathBuf::from(home + &path[1..]),
+                Err(_) => {
+                    eprintln!("\x1b[31mFailed to determine HOME directory, please specify the full path in your config file.\x1b[0m");
+                    process::exit(1);
+                }
+            }
+        } else {
+            PathBuf::from(path)
+        };
+        ansipix::of_image_file(
+            path,
+            (config.max_width.into(), 1000),
+            config.alpha_threshold.unwrap_or(50),
+            false,
+        )
+    } else {
+        ansipix::of_image_bytes_with_format(
+            img_bytes,
+            (config.max_width.into(), 1000),
+            config.alpha_threshold.unwrap_or(50),
+            false,
+            ImageFormat::Png,
+        )
+    } {
+        Ok(img) => img,
+        Err(e) => {
+            eprintln!("\x1b[1mFailed to create image pixel art:\x1b[0m {}", e);
+            process::exit(1);
+        }
+    };
     let img: Vec<&str> = img_str.trim_matches('\n').split('\n').collect();
 
     for line in 0..(img.len().max(infos.len())) {
