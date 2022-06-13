@@ -15,8 +15,7 @@ pub struct Config {
     pub alpha_threshold: Option<u8>,
     pub color_override: Option<u8>,
     pub image_override: Option<String>,
-    #[serde(default = "Vec::new")]
-    pub info_blacklist: Vec<Info>,
+    pub info_blacklist: Option<Vec<Info>>,
 }
 
 impl Config {
@@ -92,7 +91,7 @@ pub fn read_config() -> crate::Result<Config> {
                     alpha_threshold: None,
                     color_override: None,
                     image_override: None,
-                    info_blacklist: vec![],
+                    info_blacklist: None,
                 });
             }
             _ => return Err(e.into()),

@@ -38,7 +38,13 @@ fn main() {
         Info::Colors2,
     ]
     .iter()
-    .filter(|i| !config.info_blacklist.contains(i))
+    .filter(|i| {
+        if let Some(blacklist) = &config.info_blacklist {
+            !blacklist.contains(i)
+        } else {
+            true
+        }
+    })
     .copied()
     .collect();
     let infos: Vec<(Info, String)> = infos
