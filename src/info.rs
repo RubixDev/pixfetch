@@ -1,29 +1,9 @@
+use crate::cli::Info;
 use battery::{units::ratio::percent, State};
 use chrono::Duration;
-use serde::Deserialize;
 use std::{env, io::Read, path::Path, process::Command};
-use strum::EnumString;
 use sysinfo::{CpuExt, Pid, ProcessExt, System as InfoSystem, SystemExt};
 use systemstat::{Platform, System as StatSystem};
-
-#[derive(Deserialize, Debug, PartialEq, Eq, Clone, Copy, EnumString)]
-pub enum Info {
-    UserAtHostname,
-    Os,
-    Host,
-    Kernel,
-    Uptime,
-    Packages,
-    Shell,
-    Terminal,
-    Cpu,
-    Memory,
-    Swap,
-    Battery,
-    Seperator,
-    Colors1,
-    Colors2,
-}
 
 impl Info {
     pub fn get_info(&self, sys: &System) -> Option<String> {

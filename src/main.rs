@@ -2,9 +2,10 @@ use std::process;
 
 use ansipix::ImageFormat;
 use clap::Parser;
-use config::{expand_path, Config};
-use info::Info;
+use cli::{Config, Info};
+use config::expand_path;
 
+mod cli;
 mod config;
 mod error;
 mod info;
