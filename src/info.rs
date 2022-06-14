@@ -1,6 +1,9 @@
 use crate::cli::Info;
+#[cfg(not(target_os = "android"))]
 use battery::{units::ratio::percent, State};
 use chrono::Duration;
+#[cfg(target_os = "android")]
+use serde::Deserialize;
 use std::{env, io::Read, path::Path, process::Command};
 use sysinfo::{CpuExt, Pid, ProcessExt, System as InfoSystem, SystemExt};
 use systemstat::{Platform, System as StatSystem};
@@ -25,6 +28,18 @@ impl Info {
             Info::Colors2 => Some(sys.colors2()),
         }
     }
+}
+
+#[cfg(target_os = "android")]
+#[derive(Deserialize)]
+#[allow(dead_code)]
+struct BatteryStatus {
+    health: String,
+    percentage: u8,
+    plugged: String,
+    status: String,
+    temperature: f32,
+    current: i32,
 }
 
 pub struct System {
@@ -292,6 +307,7 @@ impl System {
         ))
     }
 
+    #[cfg(not(target_os = "android"))]
     pub fn battery(&self) -> Option<String> {
         let manager = battery::Manager::new().ok()?;
         let battery = manager.batteries().ok()?.next()?.ok()?;
@@ -301,6 +317,25 @@ impl System {
             match battery.state() {
                 State::Charging => ", charging",
                 State::Discharging => ", discharging",
+                _ => "",
+            }
+        ))
+    }
+
+    #[cfg(target_os = "android")]
+    pub fn battery(&self) -> Option<String> {
+        let status = match Command::new("termux-battery-status").output() {
+            Ok(output) => output.stdout,
+            Err(_) => return None,
+        };
+        let status: BatteryStatus =
+            serde_json::from_str(&String::from_utf8_lossy(&status[..])).ok()?;
+        Some(format!(
+            "{}%{}",
+            status.percentage,
+            match status.status.as_str() {
+                "CHARGING" => ", charging",
+                "DISCHARGING" => ", discharging",
                 _ => "",
             }
         ))
