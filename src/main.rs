@@ -22,36 +22,12 @@ fn main() {
     let flags = Config::parse();
     let config = match config::read_config() {
         Ok(conf) => match (Config {
-            max_width: if let Some(w) = flags.max_width {
-                Some(w)
-            } else {
-                conf.max_width
-            },
-            alpha_threshold: if let Some(t) = flags.alpha_threshold {
-                Some(t)
-            } else {
-                conf.alpha_threshold
-            },
-            show_colons: if let Some(c) = flags.show_colons {
-                Some(c)
-            } else {
-                conf.show_colons
-            },
-            color_override: if let Some(c) = flags.color_override {
-                Some(c)
-            } else {
-                conf.color_override
-            },
-            image_override: if let Some(i) = flags.image_override {
-                Some(i)
-            } else {
-                conf.image_override
-            },
-            info_blacklist: if let Some(b) = flags.info_blacklist {
-                Some(b)
-            } else {
-                conf.info_blacklist
-            },
+            max_width: flags.max_width.or(conf.max_width),
+            alpha_threshold: flags.alpha_threshold.or(conf.alpha_threshold),
+            show_colons: flags.show_colons.or(conf.show_colons),
+            color_override: flags.color_override.or(conf.color_override),
+            image_override: flags.image_override.or(conf.image_override),
+            info_blacklist: flags.info_blacklist.or(conf.info_blacklist),
         }
         .validated())
         {
