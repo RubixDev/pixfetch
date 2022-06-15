@@ -13,6 +13,7 @@ clap = { version = "3.2.4", features = ["derive", "wrap_help"] }
 serde = { version = "1.0.137", features = ["derive"] }
 strum = { version = "0.24.1", features = ["derive"] }
 sysinfo = "0.24.3"
+systemstat = "0.1.11"
 toml = "0.5.9"
 
 [target.'cfg(not(target_os = "android"))'.dependencies]

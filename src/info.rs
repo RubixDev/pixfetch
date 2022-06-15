@@ -8,6 +8,7 @@ use std::{env, io::Read, process::Command};
 use sysinfo::{
     CpuExt, CpuRefreshKind, Pid, ProcessExt, ProcessRefreshKind, RefreshKind, SystemExt,
 };
+use systemstat::Platform;
 
 impl Info {
     pub fn get_info(&self, sys: &mut System) -> Option<String> {
@@ -45,6 +46,7 @@ struct BatteryStatus {
 
 pub struct System {
     sysinfo: sysinfo::System,
+    systemstat: systemstat::System,
 }
 
 impl System {
@@ -55,6 +57,7 @@ impl System {
                     .with_cpu(CpuRefreshKind::new())
                     .with_memory(),
             ),
+            systemstat: systemstat::System::new(),
         }
     }
 
@@ -171,8 +174,7 @@ impl System {
     }
 
     pub fn uptime(&self) -> Option<String> {
-        let seconds = self.sysinfo.uptime();
-        let duration = Duration::seconds(seconds as i64);
+        let duration = Duration::from_std(self.systemstat.uptime().ok()?).ok()?;
 
         let days = duration.num_days();
         let hours = duration.num_hours() - 24 * days;
