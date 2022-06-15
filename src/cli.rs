@@ -1,9 +1,9 @@
 use clap::Parser;
 use serde::Deserialize;
-use strum::EnumString;
+use strum::{EnumIter, EnumString};
 
 /// Another fetch program with variable sized pixel images
-#[derive(Debug, Deserialize, Parser, Default)]
+#[derive(Debug, Deserialize, Parser)]
 #[clap(author)]
 pub struct Config {
     /// The maximum width in pixels of the image
@@ -37,17 +37,18 @@ pub struct Config {
     pub info_blacklist: Option<Vec<Info>>,
 }
 
-#[derive(Deserialize, Debug, PartialEq, Eq, Clone, Copy, EnumString)]
+#[derive(Deserialize, Debug, PartialEq, Eq, Clone, Copy, EnumString, EnumIter)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum Info {
     UserAtHostname,
-    Os,
+    OS,
     Host,
     Kernel,
     Uptime,
     Packages,
     Shell,
     Terminal,
-    Cpu,
+    CPU,
     Memory,
     Swap,
     Battery,

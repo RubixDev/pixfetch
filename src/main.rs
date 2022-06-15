@@ -1,19 +1,24 @@
-use std::process;
+use std::{fs::File, io::Read, process};
 
-use ansipix::ImageFormat;
+use cache::{read_cache, write_cache};
 use clap::Parser;
 use cli::{Config, Info};
 use config::expand_path;
 
+mod cache;
 mod cli;
 mod config;
 mod error;
 mod info;
 
 pub use error::Result;
+use strum::IntoEnumIterator;
+
+pub const DEFAULT_MAX_WIDTH: u8 = 30;
+pub const DEFAULT_ALPHA_THRESHOLD: u8 = 50;
 
 fn main() {
-    let sys = info::System::new();
+    let mut sys = info::System::new();
     let flags = Config::parse();
     let config = match config::read_config() {
         Ok(conf) => match (Config {
@@ -57,36 +62,18 @@ fn main() {
         }
     };
 
-    let infos: Vec<_> = vec![
-        Info::UserAtHostname,
-        Info::Os,
-        Info::Host,
-        Info::Kernel,
-        Info::Uptime,
-        Info::Packages,
-        Info::Shell,
-        Info::Terminal,
-        Info::Cpu,
-        Info::Memory,
-        Info::Swap,
-        Info::Battery,
-        Info::Seperator,
-        Info::Colors1,
-        Info::Colors2,
-    ]
-    .iter()
-    .filter(|i| {
-        if let Some(blacklist) = &config.info_blacklist {
-            !blacklist.contains(i)
-        } else {
-            true
-        }
-    })
-    .copied()
-    .collect();
+    let infos: Vec<_> = Info::iter()
+        .filter(|i| {
+            if let Some(blacklist) = &config.info_blacklist {
+                !blacklist.contains(i)
+            } else {
+                true
+            }
+        })
+        .collect();
     let infos: Vec<(Info, String)> = infos
         .iter()
-        .map(|i| (i, i.get_info(&sys)))
+        .map(|i| (i, i.get_info(&mut sys)))
         .filter(|i| i.1.is_some())
         .map(|i| (*i.0, i.1.unwrap()))
         .collect();
@@ -113,33 +100,54 @@ fn main() {
             &include_bytes!("../logos/tux.png")[..]
         }
     };
+    let mut buf = vec![];
+    let img_bytes = if let Some(path) = &config.image_override {
+        let mut file = match File::open(expand_path(path)) {
+            Ok(file) => file,
+            Err(e) => {
+                eprintln!(
+                    "\x1b[1;31mCould not open custom image:\x1b[22m {}\x1b[0m",
+                    e
+                );
+                process::exit(1);
+            }
+        };
+        file.read_to_end(&mut buf).unwrap_or_else(|e| {
+            eprintln!(
+                "\x1b[1;31mCould not read custom image:\x1b[22m {}\x1b[0m",
+                e
+            );
+            process::exit(1);
+        });
+        &buf[..]
+    } else {
+        img_bytes
+    };
+
+    let max_width = config.max_width.unwrap_or(DEFAULT_MAX_WIDTH).into();
+    let (img_str, used_cache) = if let Some(cache) = read_cache(&config, img_bytes) {
+        (cache.image, true)
+    } else {
+        match ansipix::of_image_bytes(
+            img_bytes,
+            (max_width, 1000),
+            config.alpha_threshold.unwrap_or(DEFAULT_ALPHA_THRESHOLD),
+            false,
+        ) {
+            Ok(img) => (img, false),
+            Err(e) => {
+                eprintln!(
+                    "\x1b[1;31mFailed to create image pixel art:\x1b[22m {}\x1b[0m",
+                    e
+                );
+                process::exit(1);
+            }
+        }
+    };
+
     if let Some(color_override) = config.color_override {
         col = color_override;
     }
-    let max_width = config.max_width.unwrap_or(30).into();
-    let img_str = match if let Some(path) = config.image_override {
-        let path = expand_path(&path);
-        ansipix::of_image_file(
-            path,
-            (max_width, 1000),
-            config.alpha_threshold.unwrap_or(50),
-            false,
-        )
-    } else {
-        ansipix::of_image_bytes_with_format(
-            img_bytes,
-            (max_width, 1000),
-            config.alpha_threshold.unwrap_or(50),
-            false,
-            ImageFormat::Png,
-        )
-    } {
-        Ok(img) => img,
-        Err(e) => {
-            eprintln!("\x1b[1mFailed to create image pixel art:\x1b[0m {}", e);
-            process::exit(1);
-        }
-    };
     let img: Vec<&str> = img_str.trim_matches('\n').split('\n').collect();
 
     for line in 0..(img.len().max(infos.len())) {
@@ -165,5 +173,9 @@ fn main() {
             }
         }
         println!();
+    }
+
+    if !used_cache {
+        write_cache(&config, img_bytes, img_str);
     }
 }

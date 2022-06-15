@@ -6,7 +6,22 @@ use std::{
     process,
 };
 
-use crate::{cli::Config, error::Error};
+use crate::{
+    cli::{Config, Info},
+    error::Error,
+};
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            max_width: None,
+            alpha_threshold: None,
+            image_override: None,
+            color_override: None,
+            info_blacklist: Some(vec![Info::Terminal]),
+        }
+    }
+}
 
 impl Config {
     pub fn validated(self) -> crate::Result<Self> {

@@ -15,20 +15,20 @@
 #image_override = "~/Pictures/logo.png"
 
 # A list of infos to not show
-#info_blacklist = [
+info_blacklist = [
 #    "UserAtHostname",
-#    "Os",
+#    "OS",
 #    "Host",
 #    "Kernel",
 #    "Uptime",
 #    "Packages",
 #    "Shell",
-#    "Terminal",
-#    "Cpu",
+    "Terminal", # takes by far the longest to fetch
+#    "CPU",
 #    "Memory",
 #    "Swap",
 #    "Battery",
 #    "Seperator",
 #    "Colors1",
 #    "Colors2",
-#]
+]

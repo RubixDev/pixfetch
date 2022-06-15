@@ -4,22 +4,23 @@ use battery::{units::ratio::percent, State};
 use chrono::Duration;
 #[cfg(target_os = "android")]
 use serde::Deserialize;
-use std::{env, io::Read, path::Path, process::Command};
-use sysinfo::{CpuExt, Pid, ProcessExt, System as InfoSystem, SystemExt};
-use systemstat::{Platform, System as StatSystem};
+use std::{env, io::Read, process::Command};
+use sysinfo::{
+    CpuExt, CpuRefreshKind, Pid, ProcessExt, ProcessRefreshKind, RefreshKind, SystemExt,
+};
 
 impl Info {
-    pub fn get_info(&self, sys: &System) -> Option<String> {
+    pub fn get_info(&self, sys: &mut System) -> Option<String> {
         match self {
             Info::UserAtHostname => sys.user_at_hostname(),
-            Info::Os => sys.os(),
+            Info::OS => sys.os(),
             Info::Host => sys.host(),
             Info::Kernel => sys.kernel(),
             Info::Uptime => sys.uptime(),
             Info::Packages => sys.packages(),
             Info::Shell => sys.shell(),
             Info::Terminal => sys.terminal(),
-            Info::Cpu => sys.cpu(),
+            Info::CPU => sys.cpu(),
             Info::Memory => sys.memory(),
             Info::Swap => sys.swap(),
             Info::Battery => sys.battery(),
@@ -43,23 +44,18 @@ struct BatteryStatus {
 }
 
 pub struct System {
-    systemstat: StatSystem,
-    sysinfo: InfoSystem,
+    sysinfo: sysinfo::System,
 }
 
 impl System {
     pub fn new() -> System {
-        let mut s = System {
-            systemstat: StatSystem::new(),
-            sysinfo: InfoSystem::new(),
-        };
-        s.sysinfo.refresh_memory();
-        s.sysinfo.refresh_processes();
-        s
-    }
-
-    fn is_android(&self) -> bool {
-        Path::new("/system/app").exists() && Path::new("/system/priv-app").exists()
+        System {
+            sysinfo: sysinfo::System::new_with_specifics(
+                RefreshKind::new()
+                    .with_cpu(CpuRefreshKind::new())
+                    .with_memory(),
+            ),
+        }
     }
 
     pub fn user_at_hostname(&self) -> Option<String> {
@@ -79,7 +75,7 @@ impl System {
     pub fn os(&self) -> Option<String> {
         let version = self.sysinfo.os_version();
         if let Some(version) = version {
-            if self.is_android() {
+            if cfg!(target_os = "android") {
                 return Some(format!("Android {}", version));
             }
             if !version.contains("rolling") {
@@ -90,7 +86,7 @@ impl System {
     }
 
     pub fn host(&self) -> Option<String> {
-        if self.is_android() {
+        if cfg!(target_os = "android") {
             return self.sysinfo.name();
         }
 
@@ -175,7 +171,8 @@ impl System {
     }
 
     pub fn uptime(&self) -> Option<String> {
-        let duration = Duration::from_std(self.systemstat.uptime().ok()?).ok()?;
+        let seconds = self.sysinfo.uptime();
+        let duration = Duration::seconds(seconds as i64);
 
         let days = duration.num_days();
         let hours = duration.num_hours() - 24 * days;
@@ -249,9 +246,10 @@ impl System {
         Some(env::var("SHELL").ok()?.rsplit_once('/')?.1.to_owned())
     }
 
-    pub fn terminal(&self) -> Option<String> {
-        let home = env::var("HOME");
-        if let Ok(home) = home {
+    pub fn terminal(&mut self) -> Option<String> {
+        self.sysinfo
+            .refresh_processes_specifics(ProcessRefreshKind::new());
+        if let Ok(home) = env::var("HOME") {
             if home.contains("termux") {
                 return Some(String::from("termux"));
             }
@@ -263,18 +261,14 @@ impl System {
 
         let mut name = terminal.name();
         if name == "electron" {
-            let parent_pid = terminal.parent();
-            if let Some(pid) = parent_pid {
-                let parent = self.sysinfo.process(pid);
-                if let Some(parent) = parent {
-                    let p_parent_pid = parent.parent();
-                    if let Some(p_pid) = p_parent_pid {
-                        let p_parent = self.sysinfo.process(p_pid);
-                        if let Some(p_parent) = p_parent {
-                            if parent.name().contains("code") || p_parent.name().contains("code") {
-                                name = "vscode"
-                            }
-                        }
+            if let Some(parent1) = terminal.parent().and_then(|pid| self.sysinfo.process(pid)) {
+                if parent1.name().contains("code") {
+                    name = "vscode";
+                } else if let Some(parent2) =
+                    parent1.parent().and_then(|pid| self.sysinfo.process(pid))
+                {
+                    if parent2.name().contains("code") {
+                        name = "vscode";
                     }
                 }
             }
@@ -312,7 +306,7 @@ impl System {
         let manager = battery::Manager::new().ok()?;
         let battery = manager.batteries().ok()?.next()?.ok()?;
         Some(format!(
-            "{}%{}",
+            "{:.0}%{}",
             battery.state_of_charge().get::<percent>(),
             match battery.state() {
                 State::Charging => ", charging",
