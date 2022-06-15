@@ -32,6 +32,11 @@ fn main() {
             } else {
                 conf.alpha_threshold
             },
+            show_colons: if let Some(c) = flags.show_colons {
+                Some(c)
+            } else {
+                conf.show_colons
+            },
             color_override: if let Some(c) = flags.color_override {
                 Some(c)
             } else {
@@ -167,7 +172,15 @@ fn main() {
                 print!(
                     "\x1b[1;3{}m{: <9}\x1b[0m {}",
                     col,
-                    format!("{:?}:", infos[line].0),
+                    format!(
+                        "{:?}{}",
+                        infos[line].0,
+                        if config.show_colons.unwrap_or(true) {
+                            ":"
+                        } else {
+                            ""
+                        }
+                    ),
                     infos[line].1
                 );
             }

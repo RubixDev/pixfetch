@@ -18,6 +18,10 @@ pub struct Config {
     #[clap(long)]
     pub alpha_threshold: Option<u8>,
 
+    /// Whether to show a colon between each info key and value
+    #[clap(long)]
+    pub show_colons: Option<bool>,
+
     /// Override the main color
     ///
     /// - Must be an integer between 0 and 7

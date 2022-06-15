@@ -6,6 +6,9 @@
 # - Must be an integer between 0 and 255
 #alpha_threshold = 50
 
+# Whether to show a colon between each info key and value
+#show_colons = true
+
 # Override the main color
 # - Must be an integer between 0 and 7
 # - The color for the user@hostname will be this + 1

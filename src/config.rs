@@ -16,6 +16,7 @@ impl Default for Config {
         Self {
             max_width: None,
             alpha_threshold: None,
+            show_colons: None,
             image_override: None,
             color_override: None,
             info_blacklist: Some(vec![Info::Terminal]),
