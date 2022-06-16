@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 authors = ["RubixDev"]
 description = "A fetch program with variable sized pixel images"
+repository = "https://github.com/RubixDev/pixfetch"
+license = "GPL-2.0-only"
+keywords = ["ansi", "terminal", "pixel", "image", "cli", "fetch", "linux", "android"]
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
