@@ -69,7 +69,7 @@ fn main() {
                 &include_bytes!("../logos/arch.png")[..]
             } else if distro.contains("Android") {
                 col = 2;
-                &include_bytes!("../logos/android2.png")[..]
+                &include_bytes!("../logos/android.png")[..]
             } else if distro.contains("Debian") {
                 col = 1;
                 &include_bytes!("../logos/debian.png")[..]
