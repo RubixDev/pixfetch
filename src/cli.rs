@@ -2,9 +2,8 @@ use clap::{builder::ValueHint, Parser};
 use serde::Deserialize;
 use strum::{EnumIter, EnumString};
 
-/// Another fetch program with variable sized pixel images
 #[derive(Debug, Deserialize, Parser)]
-#[clap(author)]
+#[clap(author, version, about)]
 pub struct Config {
     /// The maximum width in pixels of the image
     ///
