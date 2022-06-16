@@ -6,7 +6,7 @@ authors = ["RubixDev"]
 description = "A fetch program with variable sized pixel images"
 repository = "https://github.com/RubixDev/pixfetch"
 license = "GPL-2.0-only"
-keywords = ["ansi", "terminal", "pixel", "image", "cli", "fetch", "linux", "android"]
+keywords = ["ansi", "terminal", "pixel", "cli", "fetch"]
 categories = ["command-line-utilities"]
 exclude = ["screenshots"]
 
