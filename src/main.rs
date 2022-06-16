@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 use std::{fs::File, io::Read, process};
 
 use cache::{read_cache, write_cache};
