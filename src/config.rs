@@ -45,7 +45,7 @@ impl Config {
         if let Some(path) = &self.image_override {
             if !expand_path(path).is_file() {
                 return Err(Error::InvalidConfig(format!(
-                    "The specified image is not a file: `{}`",
+                    "The specified image path does not point to a file: `{}`",
                     path,
                 )));
             }
