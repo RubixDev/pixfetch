@@ -3,8 +3,10 @@ use std::{env, fs, path::PathBuf};
 use clap::CommandFactory;
 use clap_complete::{generate_to, Shell};
 use clap_mangen::Man;
+use cli::Config;
 
-include!("src/cli.rs");
+#[path = "src/cli.rs"]
+mod cli;
 
 fn main() -> std::io::Result<()> {
     let outdir = match env::var_os("OUT_DIR") {
