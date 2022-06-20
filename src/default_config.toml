@@ -17,6 +17,25 @@
 # Path to a custom image to be used instead
 #image_override = "~/Pictures/logo.png"
 
+# A list of infos to exclusively show
+#info_whitelist = [
+#    "UserAtHostname",
+#    "OS",
+#    "Host",
+#    "Kernel",
+#    "Uptime",
+#    "Packages",
+#    "Shell",
+#    "Terminal",
+#    "CPU",
+#    "Memory",
+#    "Swap",
+#    "Battery",
+#    "Seperator",
+#    "Colors1",
+#    "Colors2",
+#]
+
 # A list of infos to not show
 info_blacklist = [
 #    "UserAtHostname",

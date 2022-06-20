@@ -33,7 +33,21 @@ pub struct Config {
     #[clap(long, value_name = "PATH", value_hint = ValueHint::FilePath, action)]
     pub image_override: Option<String>,
 
-    // TODO: get completion for more than one value
+    // TODO: get completion for more than one value (possible with https://github.com/clap-rs/clap/issues/3166)
+    /// A list of infos to exclusively show
+    ///
+    /// - Either use the option multiple times, or seperate the items with commas
+    #[clap(
+        long,
+        use_value_delimiter = true,
+        require_value_delimiter = true,
+        value_name = "INFOS",
+        min_values = 0,
+        action
+    )]
+    pub info_whitelist: Option<Vec<Info>>,
+
+    // TODO: get completion for more than one value (possible with https://github.com/clap-rs/clap/issues/3166)
     /// A list of infos to not show
     ///
     /// - Either use the option multiple times, or seperate the items with commas
@@ -43,7 +57,7 @@ pub struct Config {
         require_value_delimiter = true,
         value_name = "INFOS",
         min_values = 0,
-        action,
+        action
     )]
     pub info_blacklist: Option<Vec<Info>>,
 
