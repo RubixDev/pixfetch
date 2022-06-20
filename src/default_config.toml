@@ -35,3 +35,6 @@ info_blacklist = [
 #    "Colors1",
 #    "Colors2",
 ]
+
+# When set to true, skip the image cache
+#skip_cache = true

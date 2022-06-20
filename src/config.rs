@@ -20,6 +20,7 @@ impl Default for Config {
             image_override: None,
             color_override: None,
             info_blacklist: Some(vec![Info::Terminal]),
+            skip_cache: None,
         }
     }
 }

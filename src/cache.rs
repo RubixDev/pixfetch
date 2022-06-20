@@ -31,6 +31,10 @@ fn cache_path() -> Option<String> {
 }
 
 pub fn read_cache(config: &Config, image: &[u8]) -> Option<Cache> {
+    if config.skip_cache.unwrap_or(false) {
+        return None;
+    }
+
     let path = cache_path()?;
 
     let mut buf = String::new();
@@ -54,6 +58,10 @@ pub fn read_cache(config: &Config, image: &[u8]) -> Option<Cache> {
 }
 
 pub fn write_cache(config: &Config, image: &[u8], image_str: String) -> Option<()> {
+    if config.skip_cache.unwrap_or(false) {
+        return None;
+    }
+
     let path = cache_path()?;
 
     let mut s = DefaultHasher::new();

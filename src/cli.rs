@@ -46,6 +46,10 @@ pub struct Config {
         action,
     )]
     pub info_blacklist: Option<Vec<Info>>,
+
+    /// When set to true, skip the image cache
+    #[clap(long, value_name = "true|false", action)]
+    pub skip_cache: Option<bool>,
 }
 
 #[derive(Deserialize, Debug, PartialEq, Eq, Clone, Copy, EnumString, EnumIter)]

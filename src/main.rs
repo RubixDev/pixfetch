@@ -30,6 +30,7 @@ fn main() {
             color_override: flags.color_override.or(conf.color_override),
             image_override: flags.image_override.or(conf.image_override),
             info_blacklist: flags.info_blacklist.or(conf.info_blacklist),
+            skip_cache: flags.skip_cache.or(conf.skip_cache),
         }
         .validated())
         {
