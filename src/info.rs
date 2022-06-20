@@ -197,49 +197,59 @@ impl System {
     }
 
     pub fn packages(&self) -> Option<String> {
-        let commands = vec![
-            Command::new("pacman").arg("-Qq").output(),
-            Command::new("dpkg-query")
-                .args(["-f", r".\n", "-W"])
-                .output(),
-            Command::new("bonsai").arg("list").output(),
-            Command::new("pkginfo").arg("-i").output(),
-            Command::new("rpm").arg("-qa").output(),
-            Command::new("xbps-query").arg("-l").output(),
-            Command::new("apk").arg("info").output(),
-            Command::new("guix")
-                .args(["package", "--list-installed"])
-                .output(),
-            Command::new("opkg").arg("list-installed").output(),
-            Command::new("kiss").arg("l").output(),
-            Command::new("cpt-list").output(),
-            Command::new("pacman-g2").arg("-Q").output(),
-            Command::new("lvu").arg("installed").output(),
-            Command::new("tce-status").arg("-i").output(),
-            Command::new("pkg_info").output(),
-            Command::new("pkgin").arg("list").output(),
-            Command::new("gaze").arg("installed").output(),
-            Command::new("alps").arg("showinstalled").output(),
-            Command::new("butch").arg("list").output(),
-            Command::new("swupd")
-                .args(["bundle-list", "--quiet"])
-                .output(),
-            Command::new("pisi").arg("li").output(),
-            Command::new("pacstall").arg("-L").output(),
-            // TODO: emerge
+        let commands = [
+            ("pacman", Command::new("pacman").arg("-Qq").output()),
+            (
+                "dpkg",
+                Command::new("dpkg-query")
+                    .args(["-f", r".\n", "-W"])
+                    .output(),
+            ),
+            ("bonsai", Command::new("bonsai").arg("list").output()),
+            ("pkginfo", Command::new("pkginfo").arg("-i").output()),
+            ("rpm", Command::new("rpm").arg("-qa").output()),
+            ("xbps-query", Command::new("xbps-query").arg("-l").output()),
+            ("apk", Command::new("apk").arg("info").output()),
+            (
+                "guix",
+                Command::new("guix")
+                    .args(["package", "--list-installed"])
+                    .output(),
+            ),
+            ("opkg", Command::new("opkg").arg("list-installed").output()),
+            ("kiss", Command::new("kiss").arg("l").output()),
+            ("cpt-list", Command::new("cpt-list").output()),
+            ("pacman-g2", Command::new("pacman-g2").arg("-Q").output()),
+            ("lvu", Command::new("lvu").arg("installed").output()),
+            ("tce-status", Command::new("tce-status").arg("-i").output()),
+            ("pkg_info", Command::new("pkg_info").output()),
+            ("pkgin", Command::new("pkgin").arg("list").output()),
+            ("sorcery", Command::new("gaze").arg("installed").output()),
+            ("alps", Command::new("alps").arg("showinstalled").output()),
+            ("butch", Command::new("butch").arg("list").output()),
+            (
+                "swupd",
+                Command::new("swupd")
+                    .args(["bundle-list", "--quiet"])
+                    .output(),
+            ),
+            ("pisi", Command::new("pisi").arg("li").output()),
+            ("pacstall", Command::new("pacstall").arg("-L").output()),
         ];
 
-        for command in commands.iter().flatten() {
-            if !command.status.success() {
-                continue;
+        for (pkg_manager, output) in commands.iter() {
+            if let Ok(output) = output {
+                if output.status.success() {
+                    return Some(format!(
+                        "{} ({})",
+                        String::from_utf8_lossy(&output.stdout)
+                            .trim_matches('\n')
+                            .split('\n')
+                            .count(),
+                        pkg_manager,
+                    ));
+                }
             }
-            return Some(
-                String::from_utf8_lossy(&command.stdout)
-                    .trim_matches('\n')
-                    .split('\n')
-                    .count()
-                    .to_string(),
-            );
         }
         None
     }
