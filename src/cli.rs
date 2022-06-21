@@ -25,6 +25,10 @@ pub struct Config {
     #[clap(long, value_name = "true|false", action)]
     pub skip_cache: Option<bool>,
 
+    /// Use CatmullRom (cubic) interpolation while resizing
+    #[clap(long, value_name = "true|false", action)]
+    pub aliasing: Option<bool>,
+
     /// The gap size in pixels to the left and right of the image
     ///
     /// - Must be an integer between 0 and 10

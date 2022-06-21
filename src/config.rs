@@ -18,6 +18,7 @@ impl Default for Config {
             alpha_threshold: None,
             show_colons: None,
             skip_cache: None,
+            aliasing: None,
             gap: None,
             image_override: None,
             color_override: None,

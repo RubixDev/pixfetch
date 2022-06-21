@@ -2,6 +2,7 @@
 
 use std::{fs::File, io::Read, process};
 
+use ansipix::FilterType;
 use cache::{read_cache, write_cache};
 use clap::Parser;
 use cli::{Config, Info};
@@ -10,15 +11,16 @@ use config::expand_path;
 mod cache;
 mod cli;
 mod config;
+mod distro;
 mod error;
 mod info;
-mod distro;
 
 pub use error::Result;
 use strum::IntoEnumIterator;
 
 pub const DEFAULT_MAX_WIDTH: u8 = 30;
 pub const DEFAULT_ALPHA_THRESHOLD: u8 = 50;
+pub const DEFAULT_ALIASING: bool = false;
 
 fn main() {
     let mut sys = info::System::new();
@@ -29,6 +31,7 @@ fn main() {
             alpha_threshold: flags.alpha_threshold.or(conf.alpha_threshold),
             show_colons: flags.show_colons.or(conf.show_colons),
             skip_cache: flags.skip_cache.or(conf.skip_cache),
+            aliasing: flags.aliasing.or(conf.aliasing),
             gap: flags.gap.or(conf.gap),
             color_override: flags.color_override.or(conf.color_override),
             image_override: flags.image_override.or(conf.image_override),
@@ -101,11 +104,16 @@ fn main() {
     let (img_str, used_cache) = if let Some(cache) = read_cache(&config, img_bytes) {
         (cache.image, true)
     } else {
-        match ansipix::of_image_bytes(
+        match ansipix::of_image_bytes_with_filter(
             img_bytes,
             (max_width, 1000),
             config.alpha_threshold.unwrap_or(DEFAULT_ALPHA_THRESHOLD),
             false,
+            if config.aliasing.unwrap_or(false) {
+                FilterType::CatmullRom
+            } else {
+                FilterType::Nearest
+            },
         ) {
             Ok(img) => (img, false),
             Err(e) => {

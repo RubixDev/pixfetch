@@ -12,6 +12,9 @@
 # When set to true, skip the image cache
 #skip_cache = true
 
+# Use CatmullRom (cubic) interpolation while resizing
+#aliasing = false
+
 # The gap size in pixels to the left and right of the image
 # - Must be an integer between 0 and 10
 #gap = 2
