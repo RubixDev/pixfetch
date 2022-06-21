@@ -12,6 +12,7 @@ mod cli;
 mod config;
 mod error;
 mod info;
+mod distro;
 
 pub use error::Result;
 use strum::IntoEnumIterator;
@@ -70,28 +71,7 @@ fn main() {
         .map(|i| (*i.0, i.1.unwrap()))
         .collect();
 
-    let mut col: u8;
-    let img_bytes = match sys.os() {
-        Some(distro) => {
-            if distro == "Arch Linux" {
-                col = 4;
-                &include_bytes!("../logos/arch.png")[..]
-            } else if distro.contains("Android") {
-                col = 2;
-                &include_bytes!("../logos/android.png")[..]
-            } else if distro.contains("Debian") {
-                col = 1;
-                &include_bytes!("../logos/debian.png")[..]
-            } else {
-                col = 3;
-                &include_bytes!("../logos/tux.png")[..]
-            }
-        }
-        None => {
-            col = 3;
-            &include_bytes!("../logos/tux.png")[..]
-        }
-    };
+    let (mut col, img_bytes) = distro::get_distro_image(sys.os());
     let mut buf = vec![];
     let img_bytes = if let Some(path) = &config.image_override {
         let mut file = match File::open(expand_path(path)) {
