@@ -28,11 +28,12 @@ fn main() {
             max_width: flags.max_width.or(conf.max_width),
             alpha_threshold: flags.alpha_threshold.or(conf.alpha_threshold),
             show_colons: flags.show_colons.or(conf.show_colons),
+            skip_cache: flags.skip_cache.or(conf.skip_cache),
+            gap: flags.gap.or(conf.gap),
             color_override: flags.color_override.or(conf.color_override),
             image_override: flags.image_override.or(conf.image_override),
             info_whitelist: flags.info_whitelist.or(conf.info_whitelist),
             info_blacklist: flags.info_blacklist.or(conf.info_blacklist),
-            skip_cache: flags.skip_cache.or(conf.skip_cache),
         }
         .validated())
         {
@@ -121,12 +122,13 @@ fn main() {
         col = color_override;
     }
     let img: Vec<&str> = img_str.trim_matches('\n').split('\n').collect();
+    let gap = " ".repeat(config.gap.unwrap_or(2).into());
 
     for line in 0..(img.len().max(infos.len())) {
         if line < img.len() {
-            print!("{}  ", img[line]);
+            print!("{gap}{}{gap}", img[line]);
         } else {
-            print!("{}  ", " ".repeat(max_width));
+            print!("{gap}{}{gap}", " ".repeat(max_width));
         }
 
         if line < infos.len() {

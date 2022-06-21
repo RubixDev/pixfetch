@@ -21,6 +21,16 @@ pub struct Config {
     #[clap(long, value_name = "true|false", action)]
     pub show_colons: Option<bool>,
 
+    /// When set to true, skip the image cache
+    #[clap(long, value_name = "true|false", action)]
+    pub skip_cache: Option<bool>,
+
+    /// The gap size in pixels to the left and right of the image
+    ///
+    /// - Must be an integer between 0 and 10
+    #[clap(long, value_parser = clap::value_parser!(u8).range(0..=10), action)]
+    pub gap: Option<u8>,
+
     /// Override the main color
     ///
     /// - Must be an integer between 0 and 7
@@ -60,10 +70,6 @@ pub struct Config {
         action
     )]
     pub info_blacklist: Option<Vec<Info>>,
-
-    /// When set to true, skip the image cache
-    #[clap(long, value_name = "true|false", action)]
-    pub skip_cache: Option<bool>,
 }
 
 #[derive(Deserialize, Debug, PartialEq, Eq, Clone, Copy, EnumString, EnumIter)]

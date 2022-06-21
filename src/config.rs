@@ -17,11 +17,12 @@ impl Default for Config {
             max_width: None,
             alpha_threshold: None,
             show_colons: None,
+            skip_cache: None,
+            gap: None,
             image_override: None,
             color_override: None,
             info_whitelist: None,
             info_blacklist: Some(vec![Info::Terminal]),
-            skip_cache: None,
         }
     }
 }
@@ -49,6 +50,13 @@ impl Config {
                 return Err(Error::InvalidConfig(format!(
                     "The specified image path does not point to a file: `{}`",
                     path,
+                )));
+            }
+        }
+        if let Some(gap) = &self.gap {
+            if !(0..=10).contains(gap) {
+                return Err(Error::InvalidConfig(format!(
+                    "The specified gap `{gap}` is not between 0 and 10"
                 )));
             }
         }
