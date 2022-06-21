@@ -1,5 +1,5 @@
 # pixfetch
-A fetch program with variable sized pixel images
+Another fetch program with pixelized images written in Rust
 
 ![screenshot with default config](https://raw.githubusercontent.com/RubixDev/pixfetch/master/screenshots/default.png)
 ![screenshot with custom config](https://raw.githubusercontent.com/RubixDev/pixfetch/master/screenshots/custom.png)
