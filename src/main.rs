@@ -21,6 +21,9 @@ use strum::IntoEnumIterator;
 pub const DEFAULT_MAX_WIDTH: u8 = 30;
 pub const DEFAULT_ALPHA_THRESHOLD: u8 = 50;
 pub const DEFAULT_ALIASING: bool = false;
+pub const DEFAULT_SKIP_CACHE: bool = false;
+pub const DEFAULT_SHOW_COLONS: bool = true;
+pub const DEFAULT_GAP: u8 = 2;
 
 fn main() {
     let mut sys = info::System::new();
@@ -109,7 +112,7 @@ fn main() {
             (max_width, 1000),
             config.alpha_threshold.unwrap_or(DEFAULT_ALPHA_THRESHOLD),
             false,
-            if config.aliasing.unwrap_or(false) {
+            if config.aliasing.unwrap_or(DEFAULT_ALIASING) {
                 FilterType::CatmullRom
             } else {
                 FilterType::Nearest
@@ -130,7 +133,7 @@ fn main() {
         col = color_override;
     }
     let img: Vec<&str> = img_str.trim_matches('\n').split('\n').collect();
-    let gap = " ".repeat(config.gap.unwrap_or(2).into());
+    let gap = " ".repeat(config.gap.unwrap_or(DEFAULT_GAP).into());
 
     for line in 0..(img.len().max(infos.len())) {
         if line < img.len() {
@@ -152,7 +155,7 @@ fn main() {
                     format!(
                         "{:?}{}",
                         infos[line].0,
-                        if config.show_colons.unwrap_or(true) {
+                        if config.show_colons.unwrap_or(DEFAULT_SHOW_COLONS) {
                             ":"
                         } else {
                             ""

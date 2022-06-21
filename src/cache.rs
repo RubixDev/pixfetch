@@ -9,7 +9,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::{cli::Config, DEFAULT_ALIASING, DEFAULT_ALPHA_THRESHOLD, DEFAULT_MAX_WIDTH};
+use crate::cli::Config;
 
 #[derive(Deserialize, Serialize)]
 pub struct Cache {
@@ -32,7 +32,7 @@ fn cache_path() -> Option<String> {
 }
 
 pub fn read_cache(config: &Config, image: &[u8]) -> Option<Cache> {
-    if config.skip_cache.unwrap_or(false) {
+    if config.skip_cache.unwrap_or(crate::DEFAULT_SKIP_CACHE) {
         return None;
     }
 
@@ -43,9 +43,12 @@ pub fn read_cache(config: &Config, image: &[u8]) -> Option<Cache> {
     file.read_to_string(&mut buf).ok()?;
 
     let c = toml::from_str::<Cache>(&buf).ok()?;
-    if c.max_width != config.max_width.unwrap_or(DEFAULT_MAX_WIDTH)
-        || c.alpha_threshold != config.alpha_threshold.unwrap_or(DEFAULT_ALPHA_THRESHOLD)
-        || c.aliasing != config.aliasing.unwrap_or(DEFAULT_ALIASING)
+    if c.max_width != config.max_width.unwrap_or(crate::DEFAULT_MAX_WIDTH)
+        || c.alpha_threshold
+            != config
+                .alpha_threshold
+                .unwrap_or(crate::DEFAULT_ALPHA_THRESHOLD)
+        || c.aliasing != config.aliasing.unwrap_or(crate::DEFAULT_ALIASING)
     {
         return None;
     }
@@ -60,7 +63,7 @@ pub fn read_cache(config: &Config, image: &[u8]) -> Option<Cache> {
 }
 
 pub fn write_cache(config: &Config, image: &[u8], image_str: String) -> Option<()> {
-    if config.skip_cache.unwrap_or(false) {
+    if config.skip_cache.unwrap_or(crate::DEFAULT_SKIP_CACHE) {
         return None;
     }
 
@@ -70,9 +73,11 @@ pub fn write_cache(config: &Config, image: &[u8], image_str: String) -> Option<(
     image.hash(&mut s);
     let c = Cache {
         image_hash: s.finish() as i64,
-        max_width: config.max_width.unwrap_or(DEFAULT_MAX_WIDTH),
-        alpha_threshold: config.alpha_threshold.unwrap_or(DEFAULT_ALPHA_THRESHOLD),
-        aliasing: config.aliasing.unwrap_or(DEFAULT_ALIASING),
+        max_width: config.max_width.unwrap_or(crate::DEFAULT_MAX_WIDTH),
+        alpha_threshold: config
+            .alpha_threshold
+            .unwrap_or(crate::DEFAULT_ALPHA_THRESHOLD),
+        aliasing: config.aliasing.unwrap_or(crate::DEFAULT_ALIASING),
         image: image_str,
     };
 
