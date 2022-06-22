@@ -54,6 +54,7 @@ pub fn main() -> Result<()> {
             dest_dir.join(format!("completion/{bin}.fish")),
         )?;
         fs::copy(project_root().join("README.md"), dest_dir.join("README.md"))?;
+        fs::copy(project_root().join("LICENSE"), dest_dir.join("LICENSE"))?;
 
         Command::new("tar")
             .current_dir(project_root().join("bin"))
