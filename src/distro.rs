@@ -36,6 +36,6 @@ pub fn get_distro_image(os: Option<String>) -> (u8, &'static [u8]) {
         ~"Ubuntu", 3, "ubuntu";
         ~"Fedora Linux", 4, "fedora";
         ~"Alpine Linux", 4, "alpine";
-        ="EndeavourOS Linux", 4, "endeavour";
+        ~"EndeavourOS", 4, "endeavour";
     )
 }
