@@ -25,7 +25,7 @@ fn main() -> std::io::Result<()> {
     fs::write(PathBuf::from(&outdir).join("pixfetch.1"), buffer)?;
 
     println!(
-        "cargo:warning=completion files and manpage generated in {:?}",
+        "cargo:warning=completion files and man page generated in {:?}",
         outdir
     );
 
