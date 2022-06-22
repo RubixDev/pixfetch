@@ -1,3 +1,9 @@
+[workspace]
+members = ["xtask"]
+
+[profile.release]
+strip = true
+
 [package]
 name = "pixfetch"
 version = "0.1.0"
