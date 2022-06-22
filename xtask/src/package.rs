@@ -38,6 +38,9 @@ pub fn main() -> Result<()> {
             out_dir.join(format!("{bin}.1")),
             dest_dir.join(format!("doc/{bin}.1")),
         )?;
+        Command::new("gzip")
+            .arg(dest_dir.join(format!("doc/{bin}.1")))
+            .spawn()?;
         fs::copy(
             out_dir.join(format!("_{bin}")),
             dest_dir.join(format!("completion/_{bin}")),
