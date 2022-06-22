@@ -56,7 +56,7 @@ pub fn main() -> Result<()> {
             .current_dir(project_root().join("bin"))
             .arg("-czf")
             .arg(format!("{bin}-{version}-{target}.tar.gz"))
-            .arg(target)
+            .arg(format!("{bin}-{version}-{target}"))
             .spawn()?;
     }
 
@@ -73,7 +73,10 @@ fn build_dir(target: &str) -> PathBuf {
 }
 
 fn dest_dir(target: &str) -> PathBuf {
-    let d = project_root().join("bin").join(target);
+    let (bin, version) = (*crate::BIN, *crate::VERSION);
+    let d = project_root()
+        .join("bin")
+        .join(format!("{bin}-{version}-{target}"));
     fs::create_dir_all(&d).unwrap_or(());
     fs::create_dir_all(d.join("doc")).unwrap_or(());
     fs::create_dir_all(d.join("completion")).unwrap_or(());
