@@ -1,12 +1,3 @@
----
-name: Distro logo addition
-about: Add the logo of a Linux distribution
-title: "[distro addition] "
-labels: enhancement
-assignees: RubixDev
-
----
-
 <!-- This template uses "Debian" as an example, replace the contents of every section with your requested distribution accordingly -->
 
 **Name of distribution**
