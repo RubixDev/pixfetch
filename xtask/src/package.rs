@@ -53,13 +53,10 @@ pub fn main() -> Result<()> {
         fs::copy(project_root().join("README.md"), dest_dir.join("README.md"))?;
 
         Command::new("tar")
+            .current_dir(project_root().join("bin"))
             .arg("-czf")
-            .arg(
-                project_root()
-                    .join("bin")
-                    .join(format!("{bin}-{version}-{target}.tar.gz")),
-            )
-            .arg(dest_dir)
+            .arg(format!("{bin}-{version}-{target}.tar.gz"))
+            .arg(target)
             .spawn()?;
     }
 
