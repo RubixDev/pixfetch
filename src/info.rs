@@ -293,6 +293,40 @@ impl System {
         Some(self.sysinfo.cpus().iter().next()?.brand().to_string())
     }
 
+    #[cfg(target_os = "macos")]
+    pub fn memory(&self) -> Option<String> {
+        // sysinfo counts cached/inactive pages as used and reports kB as 1000 bytes,
+        // so compute used memory like btop (active + wired)
+        let output = Command::new("vm_stat").output().ok()?;
+        let output = String::from_utf8_lossy(&output.stdout);
+        let page_size: u64 = output
+            .split("page size of ")
+            .nth(1)?
+            .split(' ')
+            .next()?
+            .parse()
+            .ok()?;
+        let pages = |key: &str| -> Option<u64> {
+            output
+                .lines()
+                .find(|line| line.starts_with(key))?
+                .split(':')
+                .nth(1)?
+                .trim()
+                .trim_end_matches('.')
+                .parse()
+                .ok()
+        };
+        let used_pages = pages("Pages active")? + pages("Pages wired down")?;
+
+        Some(format!(
+            "{:.2}GB / {:.2}GB",
+            (used_pages * page_size) as f32 / 1024.0 / 1024.0 / 1024.0,
+            (self.sysinfo.total_memory() * 1000) as f32 / 1024.0 / 1024.0 / 1024.0,
+        ))
+    }
+
+    #[cfg(not(target_os = "macos"))]
     pub fn memory(&self) -> Option<String> {
         Some(format!(
             "{:.2}GB / {:.2}GB",
